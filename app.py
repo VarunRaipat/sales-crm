@@ -23,12 +23,13 @@ PAGES = {
     "dashboard": ("📊 Dashboard", "views.dashboard"),
     "import": ("📥 Import leads", "views.import_leads"),
     "users": ("👥 Users", "views.users"),
+    "dropdowns": ("⚙️ Dropdowns", "views.dropdowns"),
     "account": ("🔑 My account", "views.account"),
 }
 SHORT = {"followups": "📅 Follow-ups", "new": "➕ New", "leads": "📋 Leads",
          "account": "👤 Account"}   # top menu labels (salespeople, on phones)
 MENU = {
-    "admin": ["followups", "new", "leads", "dashboard", "import", "users", "account"],
+    "admin": ["followups", "new", "leads", "dashboard", "import", "users", "dropdowns", "account"],
     "manager": ["followups", "new", "leads", "dashboard", "import", "account"],
     "sales": ["followups", "new", "leads", "account"],
 }

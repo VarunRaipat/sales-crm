@@ -5,10 +5,11 @@ import pandas as pd
 import streamlit as st
 
 from core.config import (
-    STAGES, CLOSED_STAGES, ACTIVITY_KINDS, LOST_REASONS, COMPANIES, PRODUCTS, SOURCES,
+    STAGES, CLOSED_STAGES,
     DEFAULT_FOLLOWUP_HOUR, IST,
 )
 from core.leads import now_ist, log_followup, update_lead, to_utc_iso, find_duplicates, clean_phone
+from core.lists import companies, products, sources, lost_reasons, activity_kinds
 from core.scope import owner_options
 from core.ui import tomorrow
 
@@ -19,7 +20,7 @@ def followup_form(lead, user, key):
     k = f"{key}_{lid}"
     with st.form(f"fu_{k}", clear_on_submit=True, border=False):
         c1, c2 = st.columns(2)
-        kind = c1.selectbox("What did you do?", ACTIVITY_KINDS, key=f"kind_{k}")
+        kind = c1.selectbox("What did you do?", activity_kinds(), key=f"kind_{k}")
         stage = c2.selectbox("Stage now", STAGES, index=STAGES.index(lead["stage"])
                              if lead["stage"] in STAGES else 0, key=f"stage_{k}")
         note = st.text_area("What happened? *", key=f"note_{k}", height=80,
@@ -31,7 +32,7 @@ def followup_form(lead, user, key):
         c5, c6 = st.columns(2)
         value = c5.number_input("Expected order value (₹)", min_value=0.0, step=1000.0,
                                 value=float(lead.get("value") or 0), key=f"v_{k}")
-        lost = c6.selectbox("If Lost — why?", [""] + LOST_REASONS, key=f"lost_{k}")
+        lost = c6.selectbox("If Lost — why?", [""] + lost_reasons(), key=f"lost_{k}")
         if st.form_submit_button("💾 Save follow-up", type="primary", width="stretch"):
             if not note.strip():
                 st.error("Write a line about what happened.")
@@ -71,13 +72,20 @@ def edit_form(lead, user, key="edit"):
         email = c5.text_input("Email", lead["email"])
         city = c6.text_input("City / area", lead["city"])
         c7, c8 = st.columns(2)
-        company = c7.selectbox("Company", COMPANIES, index=COMPANIES.index(lead["company"])
-                               if lead["company"] in COMPANIES else 0)
-        src_opts = SOURCES if lead["source"] in SOURCES or not lead["source"] else SOURCES + [lead["source"]]
+        comps = companies()
+        if lead["company"] and lead["company"] not in comps:
+            comps.append(lead["company"])
+        company = c7.selectbox("Company", comps, index=comps.index(lead["company"])
+                               if lead["company"] in comps else 0)
+        src_opts = sources()
+        if lead["source"] and lead["source"] not in src_opts:
+            src_opts.append(lead["source"])
         source = c8.selectbox("Source", [""] + src_opts,
                               index=([""] + src_opts).index(lead["source"]))
         c9, c10 = st.columns(2)
-        prods = sorted({p for v in PRODUCTS.values() for p in v} | ({lead["product"]} - {""}))
+        prods = products(lead["company"]) or products()
+        if lead["product"] and lead["product"] not in prods:
+            prods.append(lead["product"])
         product = c9.selectbox("Product", [""] + prods, accept_new_options=True,
                                index=([""] + prods).index(lead["product"]))
         req = c10.text_input("Quantity / requirement", lead["requirement"])

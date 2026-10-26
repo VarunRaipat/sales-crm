@@ -3,7 +3,8 @@ from datetime import timedelta
 import pandas as pd
 import streamlit as st
 
-from core.config import COMPANIES, OPEN_STAGES
+from core.config import OPEN_STAGES
+from core.lists import companies
 from core.db import user_names
 from core.leads import visible_leads, activities_df, followup_buckets, start_of_today
 from core.ui import rupees
@@ -45,7 +46,7 @@ def render(user):
     df = visible_leads(user)
     c1, c2 = st.columns(2)
     period = c1.selectbox("Period", PERIODS, key="db_period")
-    comp = c2.multiselect("Company", COMPANIES, placeholder="All companies", key="db_comp")
+    comp = c2.multiselect("Company", companies(), placeholder="All companies", key="db_comp")
     if comp:
         df = df[df["company"].isin(comp)]
     a, b = _range(period)
@@ -71,7 +72,7 @@ def render(user):
     st.subheader("Pipeline right now")
     st.caption("Number of open leads in each stage (all dates).")
     pipe = pd.crosstab(openl["stage"], openl["company"]).reindex(
-        index=OPEN_STAGES, columns=comp or COMPANIES, fill_value=0)
+        index=OPEN_STAGES, columns=comp or companies(), fill_value=0)
     pipe["Total"] = pipe.sum(axis=1)
     val = openl.groupby("stage")["value"].sum().reindex(OPEN_STAGES, fill_value=0)
     pipe["Value"] = val.map(rupees)

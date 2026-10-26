@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from core.config import COMPANIES
+from core.lists import companies
 from core.db import user_names
 from core.leads import visible_leads, followup_buckets, activities_df
 from core.ui import lead_header, flash
@@ -24,7 +24,7 @@ def render(user):
     show_owner = user["role"] != "sales"
 
     c1, c2 = st.columns(2)
-    comp = c1.multiselect("Company", COMPANIES, placeholder="All companies", key="fu_comp")
+    comp = c1.multiselect("Company", companies(), placeholder="All companies", key="fu_comp")
     if comp:
         df = df[df["company"].isin(comp)]
     if show_owner:

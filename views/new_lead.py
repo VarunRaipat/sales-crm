@@ -3,7 +3,8 @@ from datetime import time
 import pandas as pd
 import streamlit as st
 
-from core.config import COMPANIES, PRODUCTS, SOURCES, DEFAULT_FOLLOWUP_HOUR
+from core.config import DEFAULT_FOLLOWUP_HOUR
+from core.lists import companies, products, sources
 from core.db import user_names
 from core.leads import add_lead, find_duplicates, clean_phone, to_utc_iso
 from core.scope import owner_options
@@ -13,8 +14,10 @@ from core.ui import flash, start_of_today
 def render(user):
     st.title("➕ New lead")
     flash("new_flash")
-    company = st.segmented_control("Company *", COMPANIES, key="nl_company",
-                                   default=st.session_state.get("nl_last_company", COMPANIES[0]))
+    comps = companies()
+    last = st.session_state.get("nl_last_company")
+    company = st.segmented_control("Company *", comps, key="nl_company",
+                                   default=last if last in comps else comps[0])
     if not company:
         st.info("Pick the company this lead is for.")
         return
@@ -30,10 +33,10 @@ def render(user):
         alt = c4.text_input("Other phone")
         c5, c6 = st.columns(2)
         city = c5.text_input("City / area")
-        source = c6.selectbox("Where did the lead come from?", SOURCES, index=None,
+        source = c6.selectbox("Where did the lead come from?", sources(), index=None,
                               placeholder="Choose…")
         c7, c8 = st.columns(2)
-        product = c7.selectbox("Product", PRODUCTS.get(company, []), index=None,
+        product = c7.selectbox("Product", products(company), index=None,
                                accept_new_options=True, placeholder="Choose or type…")
         req = c8.text_input("Quantity / requirement", placeholder="e.g. 5,000 sq ft, 80 mm")
         c9, c10 = st.columns(2)

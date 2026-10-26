@@ -5,7 +5,8 @@ from datetime import time
 import pandas as pd
 import streamlit as st
 
-from core.config import COMPANIES, STAGES, CLOSED_STAGES, DEFAULT_FOLLOWUP_HOUR
+from core.config import STAGES, CLOSED_STAGES, DEFAULT_FOLLOWUP_HOUR
+from core.lists import companies
 from core.db import users_df
 from core.leads import add_lead, clean_phone, leads_df, to_utc_iso
 from core.ui import start_of_today
@@ -63,7 +64,7 @@ def _map_cols(df):
 
 def _company(v):
     v = str(v).strip().lower()
-    for c in COMPANIES:
+    for c in companies():
         if v == c.lower():
             return c
     guess = {"eco": "ECO", "ecostructures": "ECO", "pipe": "Pipe", "pipes": "Pipe",
@@ -77,8 +78,8 @@ def render(user):
     st.write("Add many leads at once from an Excel or CSV sheet. Download the template, "
              "fill one lead per row, then upload it.")
     st.download_button("⬇️ Download template (Excel)", _template(), "crm_leads_template.xlsx")
-    st.caption("Needed: **Contact person** and **Phone**. Company can be ECO, Pipe, B Wall "
-               "or PI. Salesperson = their user ID (blank = choose below). Next follow-up "
+    st.caption("Needed: **Contact person** and **Phone**. Company can be "
+               + ", ".join(companies()) + ". Salesperson = their user ID (blank = choose below). Next follow-up "
                "as DD/MM/YYYY (blank = today).")
 
     f = st.file_uploader("Upload sheet", type=["xlsx", "xls", "csv"])
@@ -95,7 +96,7 @@ def render(user):
         return
 
     c1, c2 = st.columns(2)
-    default_company = c1.selectbox("Company for rows that don't say", COMPANIES)
+    default_company = c1.selectbox("Company for rows that don't say", companies())
     u = users_df()
     u = u[u["active"]]
     by_login = {r["username"]: int(r["id"]) for r in u.to_dict("records")}

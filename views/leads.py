@@ -3,7 +3,8 @@ import html
 import pandas as pd
 import streamlit as st
 
-from core.config import COMPANIES, STAGES, OPEN_STAGES
+from core.config import STAGES, OPEN_STAGES
+from core.lists import companies
 from core.db import user_names
 from core.leads import visible_leads, activities_df, lead_by_id
 from core.ui import lead_header, flash, fmt_dt, rupees, stage_pill
@@ -13,7 +14,7 @@ from views.lead_forms import followup_form, edit_form
 def _filters(df, user, names):
     c1, c2, c3 = st.columns([2, 1, 1])
     q = c1.text_input("Search", placeholder="Name, firm, phone or city", key="ld_q")
-    comp = c2.multiselect("Company", COMPANIES, placeholder="All", key="ld_comp")
+    comp = c2.multiselect("Company", companies(), placeholder="All", key="ld_comp")
     stage_opts = ["Open (not won/lost)"] + STAGES
     stages = c3.multiselect("Stage", stage_opts, placeholder="All", key="ld_stage")
     c4, c5, c6 = st.columns(3)
